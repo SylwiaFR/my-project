@@ -5,6 +5,7 @@ on:
     tags: # run when release has been tagged, however ignore non-official semver tags (release candidates etc)
       - "v[0-9]+.[0-9]+.[0-9]+"
       - "!v[0-9]+.[0-9]+.[0-9]+-*"
+permissions: write-all
 
 jobs:
   release:
@@ -14,12 +15,26 @@ jobs:
     steps:
 
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    # TODO: setup compiler
+    - name: "Setup gcc"
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install gcc-10 g++-10
 
-    # TODO: run tests
+    - name: "Test project"
+      run: make test
 
-    # TODO: build project
+    - name: "Build project"
+      run: make build
 
+    - name: "Release"
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          LICENSE
+          dist/app*
     # TODO: release
